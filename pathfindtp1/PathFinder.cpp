@@ -1,7 +1,7 @@
-#include "Grid.h"
+#include "GridV2.h"
 
 int main()
 {
-    Grid grid = Grid(50, 50, { 2,3 }, 500);
+    GridV2 grid = GridV2(25, 25, { 12,13 }, 200, PathAlgo::A_STAR);
     grid.Loop();
 }

@@ -1,3 +1,4 @@
+/*
 #include "Grid.h"
 #include "Ascii.hpp"
 #include "PathHelper.hpp"
@@ -137,6 +138,7 @@ void Grid::CalculatePath() {
 	PathHelper pathHelper = { m_characterPos, m_cursorPos, m_grid[0].size(), m_grid.size(), m_obstacles};
 	m_path = pathHelper.Search((m_grid[0].size() + m_grid.size()) * 2);
 	*/
+	/*
 	PathHelper2::ClearVisited();
 	PathHelper2 pathHelper = { m_characterPos, m_cursorPos, m_obstacles, m_grid[0].size(), m_grid.size() };
 	m_path = pathHelper.Search(); 
@@ -175,3 +177,5 @@ void Grid::GenerateObstacles(int obstacleNumber) {
 		}
 	}
 }
+
+*/

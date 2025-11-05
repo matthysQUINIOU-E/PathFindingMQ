@@ -123,17 +123,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Algo.cpp" />
     <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="GridV2.cpp" />
     <ClCompile Include="PathFinder.cpp" />
     <ClCompile Include="PathHelper.cpp" />
     <ClCompile Include="PathHelper2.cpp" />
+    <ClCompile Include="Tile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Algo.hpp" />
     <ClInclude Include="Ascii.hpp" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="GridV2.h" />
+    <ClInclude Include="PathAlgo.hpp" />
     <ClInclude Include="PathHelper.hpp" />
     <ClInclude Include="PathHelper2.h" />
     <ClInclude Include="Position.hpp" />
+    <ClInclude Include="Tile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
