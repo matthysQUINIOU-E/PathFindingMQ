@@ -5,16 +5,16 @@
 class GridV2
 {
 public:
-	GridV2(int width, int height, Position characterPos, int obstacleNumber, PathAlgo pathAlgo);
+	GridV2(int width, int height, PathAlgo pathAlgo);
 	void Loop();
 
 private:
 	void PrintGrid();
 	void HandleInput();
 	void CalculatePath();
-	void GenerateObstacles(int obstacleNumber);
+	void ResetMaze();
+	void GenerateMaze();
 	void ClearPath();
-	bool CheckPathExist();
 
 private:
 	std::vector<std::vector<Tile>> m_tiles;
