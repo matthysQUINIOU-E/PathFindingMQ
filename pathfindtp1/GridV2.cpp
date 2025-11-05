@@ -14,10 +14,10 @@ GridV2::GridV2(int width, int height, Position characterPos, int obstacleNumber,
 
 	m_maxGridPos = { width - 1, height - 1 };
 
-	for (size_t y = 0; y < height; y++)
+	for (int y = 0; y < height; y++)
 	{
 		m_tiles.push_back(std::vector<Tile>());
-		for (size_t x = 0; x < width; x++)
+		for (int x = 0; x < width; x++)
 		{
 			Tile newTile = { {x,y}, true, false, false, -1 };
 			m_tiles[y].push_back(newTile);
@@ -29,9 +29,9 @@ GridV2::GridV2(int width, int height, Position characterPos, int obstacleNumber,
 
 void GridV2::PrintGrid() {
 	system("cls");
-	for (int y = 0; y < m_tiles.size(); y++)
+	for (int y = 0; y <= m_maxGridPos.y; y++)
 	{
-		for (int x = 0; x < m_tiles[y].size(); x++)
+		for (int x = 0; x <= m_maxGridPos.x; x++)
 		{
 			Tile& tile = m_tiles[y][x];
 
@@ -86,24 +86,24 @@ void GridV2::HandleInput() {
 	case Ascii::Z:
 		m_cursorPos.y--;
 		if (m_cursorPos.y < 0)
-			m_cursorPos.y = m_tiles.size() - 1;
+			m_cursorPos.y = m_maxGridPos.y;
 		CalculatePath();
 		break;
 	case Ascii::A:
 	case Ascii::Q:
 		m_cursorPos.x--;
 		if (m_cursorPos.x < 0)
-			m_cursorPos.x = m_tiles[0].size() - 1;
+			m_cursorPos.x = m_maxGridPos.x;
 		CalculatePath();
 		break;
 	case Ascii::S:
 		m_cursorPos.y++;
-		m_cursorPos.y %= m_tiles.size();
+		m_cursorPos.y %= m_maxGridPos.y + 1;
 		CalculatePath();
 		break;
 	case Ascii::D:
 		m_cursorPos.x++;
-		m_cursorPos.x %= m_tiles[0].size();
+		m_cursorPos.x %= m_maxGridPos.x + 1;
 		CalculatePath();
 		break;
 	default:
@@ -136,8 +136,8 @@ void GridV2::CalculatePath() {
 }
 
 void GridV2::GenerateObstacles(int obstacleNumber) {
-	int width = m_tiles[0].size();
-	int height = m_tiles.size();
+	int width = m_maxGridPos.x + 1;
+	int height = m_maxGridPos.y + 1;
 
 	while (obstacleNumber > 0) {
 		int x = std::rand() % width;
@@ -151,9 +151,9 @@ void GridV2::GenerateObstacles(int obstacleNumber) {
 }
 
 void GridV2::ClearPath() {
-	for (size_t y = 0; y < m_tiles.size(); y++)
+	for (size_t y = 0; y <= m_maxGridPos.y; y++)
 	{
-		for (size_t x = 0; x < m_tiles[y].size(); x++)
+		for (size_t x = 0; x <= m_maxGridPos.x; x++)
 		{
 			Tile& tile = m_tiles[y][x];
 			tile.inPath = false;
