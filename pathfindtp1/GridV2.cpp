@@ -29,35 +29,54 @@ GridV2::GridV2(int width, int height, Position characterPos, int obstacleNumber,
 
 void GridV2::PrintGrid() {
 	system("cls");
+
+	for (int x = 0; x <= m_maxGridPos.x + 2; x++)
+	{
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+		std::cout << ' ';
+	}
+	std::cout << std::endl;
+
 	for (int y = 0; y <= m_maxGridPos.y; y++)
 	{
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+		std::cout << ' ';
 		for (int x = 0; x <= m_maxGridPos.x; x++)
 		{
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
 			Tile& tile = m_tiles[y][x];
-
-			std::cout << "|";
 			if (x == m_characterPos.x && y == m_characterPos.y) {
-				std::cout << '0';
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_BLUE);
+				std::cout << ' ';
 			}
 			else if (x == m_cursorPos.x && y == m_cursorPos.y) {
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_RED);
-				std::cout << 'X';
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_GREEN | BACKGROUND_BLUE );
+				std::cout << ' ';
 			}
 			else if (tile.inPath) {
 				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_GREEN);
 				std::cout << ' ';
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
 			}
 			else if (tile.walkable) {
 				std::cout << ' ';
 			}
 			else {
-				std::cout << '#';
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_RED);
+				std::cout << ' ';
 			}
 		}
-		std::cout << "|" << std::endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+		std::cout << ' ' << std::endl;
 	}
+
+	for (int x = 0; x <= m_maxGridPos.x + 2; x++)
+	{
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+		std::cout << ' ';
+	}
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
+	std::cout << std::endl;
+
 	m_doPrint = false;
 }
 
