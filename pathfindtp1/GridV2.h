@@ -11,10 +11,12 @@ public:
 private:
 	void PrintGrid();
 	void HandleInput();
+
 	void CalculatePath();
+	void ClearPath();
+
 	void ResetMaze();
 	void GenerateMaze();
-	void ClearPath();
 
 private:
 	std::vector<std::vector<Tile>> m_tiles;

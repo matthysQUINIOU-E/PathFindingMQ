@@ -47,53 +47,46 @@ void GridV2::Loop() {
 
 void GridV2::PrintGrid() {
 	system("cls");
+	std::string buffer;
 
+	buffer += "\x1b[47m"; // bg blanc
 	for (int x = 0; x <= m_maxGridPos.x + 2; x++)
 	{
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
-		std::cout << ' ';
+		buffer += ' ';
 	}
-	std::cout << std::endl;
+	buffer += "\x1b[0m\n"; // reset
 
-	for (int y = 0; y <= m_maxGridPos.y; y++)
-	{
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
-		std::cout << ' ';
-		for (int x = 0; x <= m_maxGridPos.x; x++)
-		{
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
+	for (int y = 0; y <= m_maxGridPos.y; y++) {
+		buffer += "\x1b[47m "; // bg blanc
+		for (int x = 0; x <= m_maxGridPos.x; x++) {
+
 			Tile& tile = m_tiles[y][x];
-			if (x == m_characterPos.x && y == m_characterPos.y) {
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_BLUE);
-				std::cout << ' ';
-			}
-			else if (x == m_cursorPos.x && y == m_cursorPos.y) {
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_GREEN | BACKGROUND_BLUE );
-				std::cout << ' ';
-			}
-			else if (tile.inPath) {
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_GREEN);
-				std::cout << ' ';
-			}
-			else if (tile.walkable) {
-				std::cout << ' ';
-			}
-			else {
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_RED);
-				std::cout << ' ';
-			}
+
+			if (x == m_characterPos.x && y == m_characterPos.y)
+				buffer += "\x1b[44m "; //bg bleu
+			else if (x == m_cursorPos.x && y == m_cursorPos.y)
+				buffer += "\x1b[46m "; //bg cyan
+			else if (tile.inPath)
+				buffer += "\x1b[42m "; //bg vert
+			else if (!tile.walkable)
+				buffer += "\x1b[41m "; //bg rouge
+			else
+				buffer += "\x1b[0m "; // reset
 		}
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
-		std::cout << ' ' << std::endl;
+		buffer += "\x1b[47m "; // bg blanc
+		buffer += "\x1b[0m\n"; // reset
 	}
 
+	buffer += "\x1b[47m"; // bg blanc
 	for (int x = 0; x <= m_maxGridPos.x + 2; x++)
 	{
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
-		std::cout << ' ';
+		buffer += ' ';
 	}
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
-	std::cout << std::endl;
+	buffer += "\x1b[0m\n"; // reset
+
+	buffer += "R - Reload maze, ZQSD or WASD move, ENTER go to cursor";
+
+	std::cout << buffer;
 
 	m_doPrint = false;
 }
@@ -105,13 +98,11 @@ void GridV2::HandleInput() {
 	case Ascii::ENTER:
 		if (!m_tiles[m_cursorPos.y][m_cursorPos.x].inPath)
 			break;
-		m_characterPos = m_cursorPos;
 		ClearPath();
-		m_doPrint = true;
+		m_characterPos = m_cursorPos;
 		break;
 	case Ascii::R:
 		ResetMaze();
-		ClearPath();
 		break;
 	case Ascii::W:
 	case Ascii::Z:
@@ -146,7 +137,6 @@ void GridV2::HandleInput() {
 
 void GridV2::CalculatePath() {
 	ClearPath();
-	m_doPrint = true;
 	switch (m_pathAlgo)
 	{
 	case PathAlgo::DUMB_SEARCH:
@@ -166,6 +156,21 @@ void GridV2::CalculatePath() {
 	}
 }
 
+void GridV2::ClearPath() {
+	for (size_t y = 0; y <= m_maxGridPos.y; y++)
+	{
+		for (size_t x = 0; x <= m_maxGridPos.x; x++)
+		{
+			Tile& tile = m_tiles[y][x];
+			tile.inPath = false;
+			tile.visited = false;
+			tile.cameFrom = nullptr;
+		}
+	}
+
+	m_doPrint = true;
+}
+
 void GridV2::ResetMaze() {
 	for (size_t y = 0; y <= m_maxGridPos.y; y++)
 	{
@@ -177,8 +182,10 @@ void GridV2::ResetMaze() {
 	}
 
 	GenerateMaze();
-
-	m_doPrint = true;
+	if (m_tiles[m_cursorPos.y][m_cursorPos.x].inPath) 
+		CalculatePath();
+	else 
+		ClearPath();
 }
 
 void GridV2::GenerateMaze() {
@@ -228,18 +235,5 @@ void GridV2::GenerateMaze() {
 			}
 		}
 
-	}
-}
-
-void GridV2::ClearPath() {
-	for (size_t y = 0; y <= m_maxGridPos.y; y++)
-	{
-		for (size_t x = 0; x <= m_maxGridPos.x; x++)
-		{
-			Tile& tile = m_tiles[y][x];
-			tile.inPath = false;
-			tile.visited = false;
-			tile.cameFrom = nullptr;
-		}
 	}
 }
