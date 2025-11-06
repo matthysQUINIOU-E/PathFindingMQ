@@ -2,6 +2,6 @@
 
 int main()
 {
-    GridV2 grid = GridV2(115, 24, PathAlgo::A_STAR);
+    GridV2 grid = GridV2(3, 3, PathAlgo::A_STAR);
     grid.Loop();
 }
