@@ -1,6 +1,7 @@
 #pragma once
 #include "Tile.h"
 #include "PathAlgo.hpp"
+#include <chrono>
 
 class GridV2
 {
@@ -14,6 +15,8 @@ private:
 
 	void CalculatePath();
 	void ClearPath();
+	void SwitchPathAlgo();
+	const char* GetPathAlgoName();
 
 	void ResetMaze();
 	void GenerateMaze();
@@ -29,5 +32,6 @@ private:
 
 	bool m_doPrint = true;
 
+	std::chrono::microseconds m_algoExecutionTime;
 };
 

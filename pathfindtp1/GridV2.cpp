@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <conio.h>
 #include <random>
+#include <string>
 
 GridV2::GridV2(int width, int height, PathAlgo pathAlgo) {
 	m_pathAlgo = pathAlgo;
@@ -84,7 +85,11 @@ void GridV2::PrintGrid() {
 	}
 	buffer += "\x1b[0m\n"; // reset
 
-	buffer += "R - Reload maze, ZQSD or WASD move, ENTER go to cursor";
+	buffer += "R - Reload maze, ZQSD or WASD - move, ENTER - go to cursor, TAB - switch Path Algorithm, F - Calculate Path Again\n";
+	buffer += "Current Algorithm : ";
+	buffer += GetPathAlgoName();
+	buffer += ", execution time : " + std::to_string(m_algoExecutionTime.count());
+	buffer += " μs";
 
 	std::cout << buffer;
 
@@ -95,6 +100,9 @@ void GridV2::HandleInput() {
 	auto input = _getch();
 	switch (input)
 	{
+	case Ascii::TAB:
+		SwitchPathAlgo();
+		break;
 	case Ascii::ENTER:
 		if (!m_tiles[m_cursorPos.y][m_cursorPos.x].inPath)
 			break;
@@ -103,6 +111,9 @@ void GridV2::HandleInput() {
 		break;
 	case Ascii::R:
 		ResetMaze();
+		break;
+	case Ascii::F:
+		CalculatePath();
 		break;
 	case Ascii::W:
 	case Ascii::Z:
@@ -137,23 +148,37 @@ void GridV2::HandleInput() {
 
 void GridV2::CalculatePath() {
 	ClearPath();
+	std::chrono::steady_clock::time_point start; 
+	std::chrono::steady_clock::time_point end;
 	switch (m_pathAlgo)
 	{
 	case PathAlgo::DUMB_SEARCH:
+		start = std::chrono::high_resolution_clock::now();
 		DumbSearch(m_tiles, m_characterPos, m_cursorPos, m_maxGridPos);
+		end = std::chrono::high_resolution_clock::now();
 		break;
 	case PathAlgo::BFS:
+		start = std::chrono::high_resolution_clock::now();
 		Bfs(m_tiles, m_characterPos, m_cursorPos, m_maxGridPos);
+		end = std::chrono::high_resolution_clock::now();
 		break;
 	case PathAlgo::DFS:
+		start = std::chrono::high_resolution_clock::now();
 		Dfs(m_tiles, m_characterPos, m_cursorPos, m_maxGridPos);
+		end = std::chrono::high_resolution_clock::now();
 		break;
 	case PathAlgo::A_STAR:
+		start = std::chrono::high_resolution_clock::now();
 		AStar(m_tiles, m_characterPos, m_cursorPos, m_maxGridPos);
+		end = std::chrono::high_resolution_clock::now();
 		break;
 	default:
+		start = std::chrono::high_resolution_clock::now();
+		end = std::chrono::high_resolution_clock::now();
 		break;
 	}
+
+	m_algoExecutionTime = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 }
 
 void GridV2::ClearPath() {
@@ -171,6 +196,21 @@ void GridV2::ClearPath() {
 	m_doPrint = true;
 }
 
+void GridV2::SwitchPathAlgo() {
+	m_pathAlgo = (PathAlgo)((m_pathAlgo + 1) % PathAlgo::SIZE_PATH_ALGO);
+	CalculatePath();
+}
+
+const char* GridV2::GetPathAlgoName() {
+	switch (m_pathAlgo) {
+	case PathAlgo::DUMB_SEARCH: return "Simple";
+	case PathAlgo::A_STAR: return "AStar";
+	case PathAlgo::DFS: return "DFS";
+	case PathAlgo::BFS: return "BFS";
+	default: return "Unknown";
+	}
+}
+
 void GridV2::ResetMaze() {
 	for (size_t y = 0; y <= m_maxGridPos.y; y++)
 	{
@@ -182,10 +222,7 @@ void GridV2::ResetMaze() {
 	}
 
 	GenerateMaze();
-	if (m_tiles[m_cursorPos.y][m_cursorPos.x].inPath) 
-		CalculatePath();
-	else 
-		ClearPath();
+	CalculatePath();
 }
 
 void GridV2::GenerateMaze() {
@@ -237,3 +274,4 @@ void GridV2::GenerateMaze() {
 
 	}
 }
+
