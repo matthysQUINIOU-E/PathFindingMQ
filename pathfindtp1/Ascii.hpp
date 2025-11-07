@@ -3,6 +3,10 @@ enum Ascii
 {
 	TAB = 9,
 	ENTER = 13,
+	UP = 72,
+	LEFT = 75,
+	RIGHT = 77,
+	DOWN = 80,
 	A = 97,
 	D = 100,
 	F = 102,

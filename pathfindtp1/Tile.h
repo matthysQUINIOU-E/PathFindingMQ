@@ -11,4 +11,3 @@ struct Tile
 		return tile->position.CalculateManhattan(position);
 	}
 };
-

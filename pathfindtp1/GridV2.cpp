@@ -92,7 +92,7 @@ void GridV2::PrintGrid() {
 	}
 	buffer += "\x1b[0m\n"; // reset
 
-	buffer += "R - Reload maze, ZQSD or WASD - move, ENTER - go to cursor, TAB - switch Path Algorithm, F - Calculate Path Again\n";
+	buffer += "R - Reload maze, ZQSD/WASD/Arrows - move, ENTER - go to cursor, TAB - switch Path Algorithm, F - Calculate Path Again\n";
 	buffer += "Current Algorithm : ";
 	buffer += GetPathAlgoName();
 	buffer += ", execution time : " + std::to_string(m_algoExecutionTime.count());
@@ -126,6 +126,7 @@ void GridV2::HandleInput() {
 		break;
 	case Ascii::W:
 	case Ascii::Z:
+	case Ascii::UP:
 		m_cursorPos.y--;
 		if (m_cursorPos.y < 0)
 			m_cursorPos.y = m_maxGridPos.y;
@@ -133,22 +134,26 @@ void GridV2::HandleInput() {
 		break;
 	case Ascii::A:
 	case Ascii::Q:
+	case Ascii::LEFT:
 		m_cursorPos.x--;
 		if (m_cursorPos.x < 0)
 			m_cursorPos.x = m_maxGridPos.x;
 		CalculatePath();
 		break;
 	case Ascii::S:
+	case Ascii::DOWN:
 		m_cursorPos.y++;
 		m_cursorPos.y %= m_maxGridPos.y + 1;
 		CalculatePath();
 		break;
 	case Ascii::D:
+	case Ascii::RIGHT:
 		m_cursorPos.x++;
 		m_cursorPos.x %= m_maxGridPos.x + 1;
 		CalculatePath();
 		break;
 	default:
+		std::cout << input << std::endl;
 		break;
 	}
 }
