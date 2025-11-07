@@ -100,12 +100,6 @@ void GridV2::PrintGrid() {
 
 	std::cout << buffer;
 
-	for (size_t i = 0; i < m_graph.size(); i++)
-	{
-		Node<Tile>* node = m_graph[i];
-		node->data->position.Print();
-	}
-
 	m_doPrint = false;
 }
 
@@ -200,10 +194,12 @@ void GridV2::ClearPath() {
 		Node<Tile>* node = m_graph[i];
 		node->visited = false;
 		node->inPath = false;
+		node->data->inPath = false;
 		node->cameFrom = nullptr;
 	}
 
 	m_doPrint = true;
+
 }
 
 void GridV2::SwitchPathAlgo() {
@@ -319,7 +315,7 @@ void GridV2::BuildGraph() {
 					if (neighborIt != tilesNodesMap.end())
 						neighborNode = neighborIt->second;
 					else {
-						neighborNode = new Node<Tile>{ tile };
+						neighborNode = new Node<Tile>{ neighborTile };
 						tilesNodesMap[neighborTile] = neighborNode;
 					}
 
@@ -381,6 +377,7 @@ void GridV2::DumbSearch(std::vector<Node<Tile>*>& nodes, Position& from, Positio
 	while (toNode->cameFrom != nullptr && toNode != fromNode)
 	{
 		toNode->inPath = true;
+		toNode->data->inPath = true;
 		toNode = toNode->cameFrom;
 	}
 }
@@ -432,6 +429,7 @@ void GridV2::Bfs(std::vector<Node<Tile>*>& nodes, Position& from, Position& to, 
 	while (toNode->cameFrom != nullptr && toNode != fromNode)
 	{
 		toNode->inPath = true;
+		toNode->data->inPath = true;
 		toNode = toNode->cameFrom;
 	}
 }
@@ -483,6 +481,7 @@ void GridV2::Dfs(std::vector<Node<Tile>*>& nodes, Position& from, Position& to, 
 	while (toNode->cameFrom != nullptr && toNode != fromNode)
 	{
 		toNode->inPath = true;
+		toNode->data->inPath = true;
 		toNode = toNode->cameFrom;
 	}
 }
@@ -534,6 +533,7 @@ void GridV2::AStar(std::vector<Node<Tile>*>& nodes, Position& from, Position& to
 	while (toNode->cameFrom != nullptr && toNode != fromNode)
 	{
 		toNode->inPath = true;
+		toNode->data->inPath = true;
 		toNode = toNode->cameFrom;
 	}
 }
