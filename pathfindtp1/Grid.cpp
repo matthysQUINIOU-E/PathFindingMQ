@@ -1,13 +1,9 @@
-#include "Grid.h"
+#include "Grid.hpp"
 #include "Ascii.hpp"
-#include "Comparator.hpp"
 #include "Algo.hpp"
 #include <Windows.h>
 #include <conio.h>
 #include <random>
-#include <string>
-#include <queue>
-#include <unordered_map>
 
 Grid::Grid(int width, int height, PathAlgo pathAlgo) {
 	m_pathAlgo = pathAlgo;

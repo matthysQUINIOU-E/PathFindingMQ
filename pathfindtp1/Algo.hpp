@@ -1,6 +1,7 @@
 #pragma once
-#include <queue>
 #include "Node.hpp"
+#include "Comparator.hpp"
+#include <queue>
 
 namespace Algo {
 	template <typename T>

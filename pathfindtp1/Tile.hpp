@@ -1,6 +1,5 @@
 #pragma once
 #include "Position.hpp"
-#include "Node.hpp"
 
 struct Tile
 {

@@ -1,10 +1,8 @@
 #pragma once
-#include "Tile.h"
+#include "Tile.hpp"
 #include "Node.hpp"
 #include "PathAlgo.hpp"
-#include "Comparator.hpp"
 #include <chrono>
-#include <queue>
 #include <unordered_map>
 
 class Grid

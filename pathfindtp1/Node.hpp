@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include <iostream>
 
 template <typename T>
 concept HasGetManhattanFromTarget = requires(T t1, T* t2) {
