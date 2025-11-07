@@ -10,7 +10,7 @@
 class Grid
 {
 public:
-	Grid(int width, int height, PathAlgo pathAlgo);
+	Grid(int width, int height, PathAlgo = PathAlgo::A_STAR);
 	~Grid();
 	void Loop();
 
