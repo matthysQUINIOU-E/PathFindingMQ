@@ -5,20 +5,20 @@
 struct CompareBfs
 {
 	bool operator()(Node<Tile>* a, Node<Tile>* b) {
-		return a->data->distToStart > b->data->distToStart;
+		return a->distToStart > b->distToStart;
 	}
 };
 
 struct CompareDfs
 {
 	bool operator()(Node<Tile>* a, Node<Tile>* b) {
-		return a->data->distToTarget > b->data->distToTarget;
+		return a->distToTarget > b->distToTarget;
 	}
 };
 
 struct CompareAStar
 {
 	bool operator()(Node<Tile>* a, Node<Tile>* b) {
-		return (a->data->distToTarget + a->data->distToStart) > (b->data->distToTarget + b->data->distToStart);
+		return (a->distToTarget + a->distToStart) > (b->distToTarget + b->distToStart);
 	}
 };

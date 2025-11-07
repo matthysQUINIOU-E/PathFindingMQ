@@ -31,7 +31,7 @@ GridV2::GridV2(int width, int height, PathAlgo pathAlgo) {
 		m_tiles.push_back(std::vector<Tile>());
 		for (int x = 0; x < width; x++)
 		{
-			Tile newTile = { {x,y}, false, false, false };
+			Tile newTile = { {x,y}, false };
 			m_tiles[y].push_back(newTile);
 		}
 	}
@@ -74,7 +74,7 @@ void GridV2::PrintGrid() {
 				buffer += "\x1b[44m "; //bg bleu
 			else if (x == m_cursorPos.x && y == m_cursorPos.y)
 				buffer += "\x1b[46m "; //bg cyan
-			else if (tile.inPath)
+			else if (m_mapTilesGraph[&tile]->inPath)
 				buffer += "\x1b[42m "; //bg vert
 			else if (!tile.walkable)
 				buffer += "\x1b[41m "; //bg rouge
@@ -110,12 +110,14 @@ void GridV2::HandleInput() {
 	case Ascii::TAB:
 		SwitchPathAlgo();
 		break;
-	case Ascii::ENTER:
-		if (!m_tiles[m_cursorPos.y][m_cursorPos.x].inPath)
+	case Ascii::ENTER: {
+		Tile* cursorTile = &m_tiles[m_cursorPos.y][m_cursorPos.x];
+		if (!m_mapTilesGraph[cursorTile]->inPath)
 			break;
 		ClearPath();
 		m_characterPos = m_cursorPos;
 		break;
+	}
 	case Ascii::R:
 		ResetMaze();
 		break;
@@ -161,22 +163,22 @@ void GridV2::CalculatePath() {
 	{
 	case PathAlgo::DUMB_SEARCH:
 		start = std::chrono::high_resolution_clock::now();
-		DumbSearch(m_graph, m_characterPos, m_cursorPos, m_maxGridPos);
+		DumbSearch(m_graph, GetNodeCharacter(), GetNodeCursor());
 		end = std::chrono::high_resolution_clock::now();
 		break;
 	case PathAlgo::BFS:
 		start = std::chrono::high_resolution_clock::now();
-		Bfs(m_graph, m_characterPos, m_cursorPos, m_maxGridPos);
+		Bfs(m_graph, GetNodeCharacter(), GetNodeCursor());
 		end = std::chrono::high_resolution_clock::now();
 		break;
 	case PathAlgo::DFS:
 		start = std::chrono::high_resolution_clock::now();
-		Dfs(m_graph, m_characterPos, m_cursorPos, m_maxGridPos);
+		Dfs(m_graph, GetNodeCharacter(), GetNodeCursor());
 		end = std::chrono::high_resolution_clock::now();
 		break;
 	case PathAlgo::A_STAR:
 		start = std::chrono::high_resolution_clock::now();
-		AStar(m_graph, m_characterPos, m_cursorPos, m_maxGridPos);
+		AStar(m_graph, GetNodeCharacter(), GetNodeCursor());
 		end = std::chrono::high_resolution_clock::now();
 		break;
 	default:
@@ -194,12 +196,10 @@ void GridV2::ClearPath() {
 		Node<Tile>* node = m_graph[i];
 		node->visited = false;
 		node->inPath = false;
-		node->data->inPath = false;
 		node->cameFrom = nullptr;
 	}
 
 	m_doPrint = true;
-
 }
 
 void GridV2::SwitchPathAlgo() {
@@ -228,6 +228,12 @@ void GridV2::ResetMaze() {
 	}
 
 	GenerateMaze();
+	for (size_t i = 0; i < m_graph.size(); i++)
+	{
+		Node<Tile>* node = m_graph[i];
+		node->neighbors.clear();
+	}
+	BuildGraph();
 	CalculatePath();
 }
 
@@ -285,22 +291,21 @@ void GridV2::GenerateMaze() {
 void GridV2::BuildGraph() {
 	Position minGridPos = { 0, 0 };
 
-	std::unordered_map<Tile*, Node<Tile>*> tilesNodesMap;
-
 	for (size_t y = 0; y <= m_maxGridPos.y; y++)
 	{
 		for (size_t x = 0; x <= m_maxGridPos.x; x++)
 		{
 			Tile* tile = &m_tiles[y][x];
 			Node<Tile>* node = nullptr;
-
-			auto it = tilesNodesMap.find(tile);
-			if (it != tilesNodesMap.end())
-				node = it->second;
-			else {
-				node = new Node<Tile> { tile };
-				tilesNodesMap[tile] = node;
+			auto it = m_mapTilesGraph.find(tile);
+			if (it == m_mapTilesGraph.end()) {
+				node = new Node<Tile>{ tile, tile->walkable };
+				m_mapTilesGraph[tile] = node;
 			}
+			else {
+				node = it->second;
+			};
+			node->walkable = node->data->walkable;
 
 			std::vector<Position> neighbors = tile->position.GetNeighbors(minGridPos, m_maxGridPos);
 			for (size_t i = 0; i < neighbors.size(); i++)
@@ -311,13 +316,14 @@ void GridV2::BuildGraph() {
 				if (neighborTile->walkable)
 				{
 					Node<Tile>* neighborNode = nullptr;
-					auto neighborIt = tilesNodesMap.find(neighborTile);
-					if (neighborIt != tilesNodesMap.end())
-						neighborNode = neighborIt->second;
-					else {
-						neighborNode = new Node<Tile>{ neighborTile };
-						tilesNodesMap[neighborTile] = neighborNode;
+					auto it = m_mapTilesGraph.find(neighborTile);
+					if (it == m_mapTilesGraph.end()) {
+						neighborNode = new Node<Tile>{ neighborTile, neighborTile->walkable };
+						m_mapTilesGraph[neighborTile] = neighborNode;
 					}
+					else {
+						neighborNode = it->second;
+					};
 
 					node->neighbors.push_back(neighborNode);
 				}
@@ -336,226 +342,12 @@ void GridV2::DeleteNodes() {
 	m_graph.clear();
 }
 
-void GridV2::DumbSearch(std::vector<Node<Tile>*>& nodes, Position& from, Position& to, Position& maxPos) {
-	Position minPos = { 0, 0 };
-
-	std::queue<Node<Tile>*> queue;
-
-	Node<Tile>* toNode = GetNodeCursor();
-	if (!toNode->data->walkable)
-		return;
-
-	Node<Tile>* fromNode = GetNodeCharacter();
-	queue.push(fromNode);
-
-	while (!queue.empty() && toNode->cameFrom == nullptr)
-	{
-		Node<Tile>* node = queue.front();
-		queue.pop();
-		std::vector<Node<Tile>*> neighbors = node->neighbors;
-		for (size_t i = 0; i < neighbors.size(); i++)
-		{
-			Node<Tile>* neighbor = neighbors[i];
-
-			if (neighbor == toNode) {
-				neighbor->cameFrom = node;
-				break;
-			}
-
-			if (!neighbor->data->walkable)
-				continue;
-
-			if (neighbor->visited)
-				continue;
-
-			neighbor->visited = true;
-			neighbor->cameFrom = node;
-			queue.push(neighbor);
-		}
-	}
-
-	while (toNode->cameFrom != nullptr && toNode != fromNode)
-	{
-		toNode->inPath = true;
-		toNode->data->inPath = true;
-		toNode = toNode->cameFrom;
-	}
-}
-
-
-
-void GridV2::Bfs(std::vector<Node<Tile>*>& nodes, Position& from, Position& to, Position& maxPos) {
-	Position minPos = { 0, 0 };
-
-	std::priority_queue<Node<Tile>*, std::vector<Node<Tile>*>, CompareBfs> queue;
-
-	Node<Tile>* toNode = GetNodeCursor();
-	if (!toNode->data->walkable)
-		return;
-
-
-	Node<Tile>* fromNode = GetNodeCharacter();
-	fromNode->data->distToStart = 0;
-	queue.push(fromNode);
-
-	while (!queue.empty() && toNode->cameFrom == nullptr)
-	{
-		Node<Tile>* node = queue.top();
-		queue.pop();
-
-		std::vector<Node<Tile>*> neighbors = node->neighbors;
-		for (size_t i = 0; i < neighbors.size(); i++)
-		{
-			Node<Tile>* neighbor = neighbors[i];
-
-			if (neighbor == toNode) {
-				neighbor->cameFrom = node;
-				break;
-			}
-
-			if (!neighbor->data->walkable)
-				continue;
-
-			if (neighbor->visited)
-				continue;
-
-			neighbor->visited = true;
-			neighbor->cameFrom = node;
-			neighbor->data->distToStart = node->data->distToStart + 1;
-			queue.push(neighbor);
-		}
-	}
-
-	while (toNode->cameFrom != nullptr && toNode != fromNode)
-	{
-		toNode->inPath = true;
-		toNode->data->inPath = true;
-		toNode = toNode->cameFrom;
-	}
-}
-
-void GridV2::Dfs(std::vector<Node<Tile>*>& nodes, Position& from, Position& to, Position& maxPos) {
-	Position minPos = { 0, 0 };
-
-	std::priority_queue<Node<Tile>*, std::vector<Node<Tile>*>, CompareDfs> queue;
-
-
-	Node<Tile>* toNode = GetNodeCursor();
-	if (!toNode->data->walkable)
-		return;
-
-
-	Node<Tile>* fromNode = GetNodeCharacter();
-	queue.push(fromNode);
-
-	fromNode->data->CalculateManhattanFromTarget(toNode->data);
-
-	while (!queue.empty() && toNode->cameFrom == nullptr)
-	{
-		Node<Tile>* node = queue.top();
-		queue.pop();
-
-		std::vector<Node<Tile>*> neighbors = node->neighbors;
-		for (size_t i = 0; i < neighbors.size(); i++)
-		{
-			Node<Tile>* neighbor = neighbors[i];
-
-			if (neighbor == toNode) {
-				neighbor->cameFrom = node;
-				break;
-			}
-
-			if (!neighbor->data->walkable)
-				continue;
-
-			if (neighbor->visited)
-				continue;
-
-			neighbor->visited = true;
-			neighbor->cameFrom = node;
-			neighbor->data->CalculateManhattanFromTarget(toNode->data);
-			queue.push(neighbor);
-		}
-	}
-
-	while (toNode->cameFrom != nullptr && toNode != fromNode)
-	{
-		toNode->inPath = true;
-		toNode->data->inPath = true;
-		toNode = toNode->cameFrom;
-	}
-}
-
-void GridV2::AStar(std::vector<Node<Tile>*>& nodes, Position& from, Position& to, Position& maxPos) {
-	Position minPos = { 0, 0 };
-
-	std::priority_queue<Node<Tile>*, std::vector<Node<Tile>*>, CompareAStar> queue;
-
-	Node<Tile>* fromNode = GetNodeCursor();
-	queue.push(fromNode);
-
-	Node<Tile>* toNode = GetNodeCharacter();
-	if (!toNode->data->walkable)
-		return;
-
-	fromNode->data->distToStart = 0;
-	fromNode->data->CalculateManhattanFromTarget(toNode->data);
-
-	while (!queue.empty() && toNode->cameFrom == nullptr)
-	{
-		Node<Tile>* node = queue.top();
-		queue.pop();
-
-		std::vector<Node<Tile>*> neighbors = node->neighbors;
-		for (size_t i = 0; i < neighbors.size(); i++)
-		{
-			Node<Tile>* neighbor = neighbors[i];
-
-			if (neighbor == toNode) {
-				neighbor->cameFrom = node;
-				break;
-			}
-
-			if (!neighbor->data->walkable)
-				continue;
-
-			if (neighbor->visited)
-				continue;
-
-			neighbor->visited = true;
-			neighbor->cameFrom = node;
-			neighbor->data->distToStart = node->data->distToStart + 1;
-			neighbor->data->CalculateManhattanFromTarget(toNode->data);
-			queue.push(neighbor);
-		}
-	}
-
-	while (toNode->cameFrom != nullptr && toNode != fromNode)
-	{
-		toNode->inPath = true;
-		toNode->data->inPath = true;
-		toNode = toNode->cameFrom;
-	}
-}
-
 Node<Tile>* GridV2::GetNodeCharacter() {
 	Tile* tileCharacter = &m_tiles[m_characterPos.y][m_characterPos.x];
-	for (size_t i = 0; i < m_graph.size(); i++)
-	{
-		Node<Tile>* node = m_graph[i];
-		if (node->data->position == tileCharacter->position)
-			return node;
-	}
-	return nullptr;
+	return m_mapTilesGraph[tileCharacter];
 }
 
 Node<Tile>* GridV2::GetNodeCursor() {
 	Tile* tileCursor = &m_tiles[m_cursorPos.y][m_cursorPos.x];
-	for (size_t i = 0; i < m_graph.size(); i++)
-	{
-		Node<Tile>* node = m_graph[i];
-		if (node->data->position == tileCursor->position)
-			return node;
-	}
-	return nullptr;
+	return m_mapTilesGraph[tileCursor];
 }

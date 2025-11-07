@@ -1,16 +1,14 @@
 #pragma once
 #include "Position.hpp"
+#include "Node.hpp"
 
 struct Tile
 {
 	Position position;
 	bool walkable;
-	bool inPath;
-	int distToStart;
-	int distToTarget;
 
-	void CalculateManhattanFromTarget(Tile* startTile) {
-		distToTarget = position.CalculateManhattan(startTile->position);
+	int GetManhattanFromTarget(Tile* tile) const {
+		return tile->position.CalculateManhattan(position);
 	}
 };
 
