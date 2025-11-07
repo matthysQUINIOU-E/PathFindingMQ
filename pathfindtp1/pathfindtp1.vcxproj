@@ -125,21 +125,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Grid.cpp" />
-    <ClCompile Include="GridV2.cpp" />
-    <ClCompile Include="PathFinder.cpp" />
-    <ClCompile Include="PathHelper.cpp" />
-    <ClCompile Include="PathHelper2.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Tile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Algo.hpp" />
     <ClInclude Include="Ascii.hpp" />
     <ClInclude Include="Comparator.hpp" />
     <ClInclude Include="Grid.h" />
-    <ClInclude Include="GridV2.h" />
     <ClInclude Include="Node.hpp" />
     <ClInclude Include="PathAlgo.hpp" />
-    <ClInclude Include="PathHelper.hpp" />
-    <ClInclude Include="PathHelper2.h" />
     <ClInclude Include="Position.hpp" />
     <ClInclude Include="Tile.h" />
   </ItemGroup>

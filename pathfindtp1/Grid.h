@@ -1,32 +1,49 @@
-/*
 #pragma once
-#include <vector>
-#include "Position.hpp"
+#include "Tile.h"
+#include "Node.hpp"
+#include "PathAlgo.hpp"
+#include "Comparator.hpp"
+#include <chrono>
+#include <queue>
+#include <unordered_map>
 
 class Grid
 {
 public:
-	Grid(int width, int height, Position characterPos, int obstacleNumber);
+	Grid(int width, int height, PathAlgo pathAlgo);
+	~Grid();
 	void Loop();
 
 private:
 	void PrintGrid();
 	void HandleInput();
-	void ChangeCharacterPos();
+
 	void CalculatePath();
-	bool IsInVectorPosition(std::vector<Position> vector, Position position);
-	int CalculateManhattan();
-	void PrintManhattan();
-	void GenerateObstacles(int obstacleNumber);
+	void ClearPath();
+	void SwitchPathAlgo();
+
+	void ResetMaze();
+	void GenerateMaze();
+
+	void BuildGraph();
+	void DeleteNodes();
+
+	Node<Tile>* GetNodeCharacter();
+	Node<Tile>* GetNodeCursor();
 
 private:
-	std::vector<std::vector<char>> m_grid;
-	std::vector<Position> m_path;
-	std::vector<Position> m_obstacles;
+	std::vector<std::vector<Tile>> m_tiles;
+	std::vector<Node<Tile>*> m_graph;
+	std::unordered_map<Tile*, Node<Tile>*> m_mapTilesGraph;
+
 	Position m_cursorPos;
 	Position m_characterPos;
+	Position m_maxGridPos;
+
+	PathAlgo m_pathAlgo;
+
 	bool m_doPrint = true;
-	
+
+	std::chrono::microseconds m_algoExecutionTime;
 };
 
-*/

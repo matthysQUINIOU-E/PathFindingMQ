@@ -1,34 +1,8 @@
 #pragma once
-#include "Tile.h"
-#include "Node.hpp"
-#include "PathAlgo.hpp"
-#include "Comparator.hpp"
-#include <chrono>
 #include <queue>
-#include <unordered_map>
+#include "Node.hpp"
 
-class GridV2
-{
-public:
-	GridV2(int width, int height, PathAlgo pathAlgo);
-	~GridV2();
-	void Loop();
-
-private:
-	void PrintGrid();
-	void HandleInput();
-
-	void CalculatePath();
-	void ClearPath();
-	void SwitchPathAlgo();
-	const char* GetPathAlgoName();
-
-	void ResetMaze();
-	void GenerateMaze();
-
-	void BuildGraph();
-	void DeleteNodes();
-
+namespace Algo {
 	template <typename T>
 	void DumbSearch(std::vector<Node<T>*>& nodes, Node<T>* from, Node<T>* to)
 	{
@@ -207,22 +181,13 @@ private:
 		}
 	}
 
-	Node<Tile>* GetNodeCharacter();
-	Node<Tile>* GetNodeCursor();
-
-private:
-	std::vector<std::vector<Tile>> m_tiles;
-	std::vector<Node<Tile>*> m_graph;
-	std::unordered_map<Tile*, Node<Tile>*> m_mapTilesGraph;
-
-	Position m_cursorPos;
-	Position m_characterPos;
-	Position m_maxGridPos;
-
-	PathAlgo m_pathAlgo;
-
-	bool m_doPrint = true;
-
-	std::chrono::microseconds m_algoExecutionTime;
-};
-
+	const char* GetPathAlgoName(PathAlgo pathAlgo) {
+		switch (pathAlgo) {
+		case PathAlgo::DUMB_SEARCH: return "Simple";
+		case PathAlgo::A_STAR: return "AStar";
+		case PathAlgo::DFS: return "DFS";
+		case PathAlgo::BFS: return "BFS";
+		default: return "Unknown";
+		}
+	}
+}

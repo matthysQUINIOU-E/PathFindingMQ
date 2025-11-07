@@ -8,4 +8,3 @@ enum PathAlgo
 	A_STAR,
 	SIZE_PATH_ALGO
 };
-
